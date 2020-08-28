@@ -1,0 +1,1250 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index dae7e95..ad3f6cc 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -6,8 +6,11 @@ project(choufleur)
+ # endif()
+ 
+ set(CMAKE_CXX_STANDARD 17)
++# set(CMAKE_CXX_FLAGS
++#    "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-register -fPIC -march=native -O3 -Wfatal-errors")
++
+ set(CMAKE_CXX_FLAGS
+-    "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-register -fPIC -march=native -O3 -Wfatal-errors")
++    "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -Wno-register -fPIC -march=native -Wfatal-errors")
+ 
+ OPTION(PYTORCH12 "Is PyTorch >= 1.2" OFF)
+ IF(PYTORCH12)
+diff --git a/core/game.cc b/core/game.cc
+index 86d28b6..a4b6f14 100644
+--- a/core/game.cc
++++ b/core/game.cc
+@@ -6,6 +6,7 @@
+  */
+ 
+ #include "game.h"
++#include <iostream>
+ 
+ #include <fmt/printf.h>
+ 
+@@ -207,7 +208,12 @@ void Game::mainLoop() {
+               }
+             }
+           }
++          std::cout << "HITTING GAME>CC" << std::endl;
++          std::cout << "HITTING GAME>CC" << std::endl;
+           auto result = mctsPlayers.at(playerIndex)->actMcts(states);
++          std::cout << "GOT RESULT GAME>CC" << std::endl;
++          std::cout << "GOT RESULT GAME>CC" << std::endl;
++          std::cout << "GOT RESULT GAME>CC" << std::endl;
+ 
+           // Distribute results to the correct player/state and store
+           // features for training.
+@@ -242,6 +248,14 @@ void Game::mainLoop() {
+               gameState->pi.at(currentPlayerIndex).push_back(policy);
+               gameState->piMask.at(currentPlayerIndex).push_back(policyMask);
+ 
++              std::cout << "CHECKING ACTION" << std::endl;
++              std::cout << "CHECKING ACTION" << std::endl;
++              std::cout << "CHECKING ACTION" << std::endl;
++              std::cout << result.at(offset + i).bestAction << std::endl;
++              std::cout << "CHECKING ACTION" << std::endl;
++              std::cout << "CHECKING ACTION" << std::endl;
++              std::cout << "CHECKING ACTION" << std::endl;
++
+               state->forward(result.at(offset + i).bestAction);
+ 
+               // fmt::printf("game in progress: %s\n", state->history());
+@@ -524,7 +538,13 @@ void Game::step() {
+     }
+   } else {
+     auto mctsPlayer = std::dynamic_pointer_cast<mcts::MctsPlayer>(player);
++    // std::cout << "CHECKING SECOND INVOCATION OF actsMCTS" << std::endl;
++    // std::cout << "CHECKING SECOND INVOCATION OF actsMCTS" << std::endl;
++    // std::cout << "CHECKING SECOND INVOCATION OF actsMCTS" << std::endl;
+     mcts::MctsResult result = mctsPlayer->actMcts(*state_);
++    std::cout << result.rootValue << std::endl;
++    // std::cout << "CHECKING SECOND INVOCATION OF actsMCTS CALLED" << std::endl;
++    // std::cout << "CHECKING SECOND INVOCATION OF actsMCTS CALLED" << std::endl;
+     lastMctsValue_ = result.rootValue;
+ 
+     if (canResign_ && result.rootValue < -0.95f) {
+@@ -568,6 +588,7 @@ void Game::step() {
+       state_->forcedDice = std::stoul(line, nullptr, 0);
+     }
+     state_->forward(result.bestAction);
++    state_->printCurrentBoard();
+   }
+ }
+ 
+diff --git a/log.txt b/log.txt
+new file mode 100644
+index 0000000..3dbc0c0
+--- /dev/null
++++ b/log.txt
+@@ -0,0 +1,204 @@
++still using the old mcts
++0.340592
++printing board
++| | | | | | | |
++| | | | | | | |
++| | | | | | | |
++| | | | | | | |
++| | | | | | | |
++| | | |X| | | |
++using the new mcts code
++0
++printing board
++| | | | | | | |
++| | | | | | | |
++| | | | | | | |
++| | | | | | | |
++| | | | | | | |
++|O| | |X| | | |
++still using the old mcts
++0.302004
++printing board
++| | | | | | | |
++| | | | | | | |
++| | | | | | | |
++| | | | | | | |
++| | | | | | | |
++|O| | |X| | |X|
++using the new mcts code
++0
++printing board
++| | | | | | | |
++| | | | | | | |
++| | | | | | | |
++| | | | | | | |
++| | | | | | | |
++|O| |O|X| | |X|
++still using the old mcts
++0.406234
++printing board
++| | | | | | | |
++| | | | | | | |
++| | | | | | | |
++| | | | | | | |
++| | | | | | |X|
++|O| |O|X| | |X|
++using the new mcts code
++0
++printing board
++| | | | | | | |
++| | | | | | | |
++| | | | | | | |
++| | | | | | | |
++| | | | | | |X|
++|O| |O|X| |O|X|
++still using the old mcts
++0.612031
++printing board
++| | | | | | | |
++| | | | | | | |
++| | | | | | | |
++| | | | | | | |
++| | | |X| | |X|
++|O| |O|X| |O|X|
++using the new mcts code
++0
++printing board
++| | | | | | | |
++| | | | | | | |
++| | | | | | | |
++| | | | | | |O|
++| | | |X| | |X|
++|O| |O|X| |O|X|
++still using the old mcts
++0.598197
++printing board
++| | | | | | | |
++| | | | | | | |
++| | | | | | |X|
++| | | | | | |O|
++| | | |X| | |X|
++|O| |O|X| |O|X|
++using the new mcts code
++0
++printing board
++| | | | | | | |
++| | | | | | |O|
++| | | | | | |X|
++| | | | | | |O|
++| | | |X| | |X|
++|O| |O|X| |O|X|
++still using the old mcts
++0.992219
++printing board
++| | | | | | | |
++| | | | | | |O|
++| | | | | | |X|
++| | | | | | |O|
++| | | |X| | |X|
++|O|X|O|X| |O|X|
++using the new mcts code
++0
++printing board
++| | | | | | | |
++| | | | | | |O|
++| | | | | | |X|
++| | | | | | |O|
++| |O| |X| | |X|
++|O|X|O|X| |O|X|
++still using the old mcts
++0.973213
++printing board
++| | | | | | | |
++| | | | | | |O|
++| | | | | | |X|
++| | | | | | |O|
++| |O|X|X| | |X|
++|O|X|O|X| |O|X|
++using the new mcts code
++0
++printing board
++| | | | | | | |
++| | | | | | |O|
++| | | | | | |X|
++| | | | | | |O|
++| |O|X|X| | |X|
++|O|X|O|X|O|O|X|
++still using the old mcts
++0.993328
++printing board
++| | | | | | | |
++| | | | | | |O|
++| | | | | | |X|
++| |X| | | | |O|
++| |O|X|X| | |X|
++|O|X|O|X|O|O|X|
++using the new mcts code
++0
++printing board
++| | | | | | | |
++| | | | | | |O|
++| | | | | | |X|
++| |X|O| | | |O|
++| |O|X|X| | |X|
++|O|X|O|X|O|O|X|
++still using the old mcts
++0.950694
++printing board
++| | | | | | | |
++| | | | | | |O|
++| | | | | | |X|
++| |X|O| | | |O|
++|X|O|X|X| | |X|
++|O|X|O|X|O|O|X|
++using the new mcts code
++0
++printing board
++| | | | | | | |
++| | | | | | |O|
++| | | | | | |X|
++| |X|O|O| | |O|
++|X|O|X|X| | |X|
++|O|X|O|X|O|O|X|
++still using the old mcts
++0.897942
++printing board
++| | | | | | | |
++| | | | | | |O|
++| | | | | | |X|
++| |X|O|O| | |O|
++|X|O|X|X|X| |X|
++|O|X|O|X|O|O|X|
++using the new mcts code
++0
++printing board
++| | | | | | | |
++| | | | | | |O|
++| | | |O| | |X|
++| |X|O|O| | |O|
++|X|O|X|X|X| |X|
++|O|X|O|X|O|O|X|
++######################################################################
++#                             EVALUATION                             #
++######################################################################
++setting-up pseudo-random generator...
++finding checkpoints...
++creating opponent model(s) and device(s)...
++total #trainable params = 99008
++creating model(s) and device(s)...
++total #trainable params = 99008
++updating model(s)...
++evaluating 1 games with batches of size 1
++creating evaluation environment...
++the pure mcts eval flag is
++False
++the opponent mcts eval flag is
++False
++opponent first
++evaluating...
++Playing 1 games of Connect4:
++- Connect4BenchModel player uses 400 rollouts per actor with 1 actor
++- Connect4BenchModel opponent uses 400 rollouts per actor with 1 actor
++Evaluated on 1 games in : 11.350401639938354 s
++@@@eval: win: 100.00, tie: 0.00, loss: 0.00, avg: 100.00
++total time: 11.350557565689087 s
+diff --git a/pypolygames/env_creation_helpers.py b/pypolygames/env_creation_helpers.py
+index 7f4c008..c18582a 100644
+--- a/pypolygames/env_creation_helpers.py
++++ b/pypolygames/env_creation_helpers.py
+@@ -81,25 +81,32 @@ def create_model(
+ 
+ 
+ def _set_mcts_option(
++    use_new_mcts: bool,
+     num_rollouts: int,
+     seed: int,
+     human_mode: bool = False,
+     time_ratio: float = 0.7,
+     total_time: float = 0,
++    noise_a_star_model: str = "exp",
++    noise_a_star_param: float = 0.01,
+ ) -> mcts.MctsOption:
+     # TODO: put hardcoded value in conf file
+     mcts_option = mcts.MctsOption()
++    mcts_option.use_new_mcts = use_new_mcts
+     mcts_option.use_mcts = True
+     mcts_option.puct = 1
+-    mcts_option.sample_before_step_idx = 2 if human_mode else 32
++    mcts_option.sample_before_step_idx = 4
+     mcts_option.num_rollout_per_thread = num_rollouts
+     mcts_option.seed = seed
+     mcts_option.virtual_loss = 1
+     mcts_option.total_time = total_time
+     mcts_option.time_ratio = time_ratio
++    mcts_option.noise_a_star_model = noise_a_star_model
++    mcts_option.noise_a_star_param = noise_a_star_param
+     return mcts_option
+ 
+ 
++#this is the opponent POV
+ def _create_pure_mcts_player(
+     game: polygames.Game, mcts_option: mcts.MctsOption, num_actor: int
+ ) -> mcts.MctsPlayer:
+@@ -113,6 +120,7 @@ def _create_pure_mcts_player(
+     return player
+ 
+ 
++#this is the main player POV
+ def _create_neural_mcts_player(
+     game: polygames.Game,
+     mcts_option: mcts.MctsOption,
+@@ -141,24 +149,27 @@ def create_player(
+     num_actor: int,
+     num_rollouts: int,
+     pure_mcts: bool,
++    new_mcts_player: bool,
++    noise_a_star_model: str,
++    noise_a_star_param: float,
+     actor_channel: Optional[tube.DataChannel],
+     assembler: Optional[tube.ChannelAssembler] = None,
+     human_mode: bool = False,
+     time_ratio: float = 0.07,
+     total_time: float = 0,
+ ):
+-    mcts_option = _set_mcts_option(
+-        num_rollouts=num_rollouts,
+-        seed=next(seed_generator),
+-        human_mode=human_mode,
+-        time_ratio=time_ratio,
+-        total_time=total_time,
+-    )
+-    if pure_mcts:
+-        return _create_pure_mcts_player(
+-            game=game, mcts_option=mcts_option, num_actor=num_actor
+-        )
+-    else:
++
++    if new_mcts_player:
++        mcts_option = _set_mcts_option(
++            use_new_mcts=True,
++            num_rollouts=num_rollouts,
++            seed=next(seed_generator),
++            human_mode=human_mode,
++            time_ratio=time_ratio,
++            total_time=total_time,
++            noise_a_star_model = noise_a_star_model,
++            noise_a_star_param = noise_a_star_param,
++            )
+         return _create_neural_mcts_player(
+             game=game,
+             mcts_option=mcts_option,
+@@ -166,3 +177,24 @@ def create_player(
+             actor_channel=actor_channel,
+             assembler=assembler,
+         )
++    else:
++        if pure_mcts:
++            return _create_pure_mcts_player(
++                game=game, mcts_option=mcts_option, num_actor=num_actor
++            )
++        else:
++            mcts_option = _set_mcts_option(
++                use_new_mcts=False,
++                num_rollouts=num_rollouts,
++                seed=next(seed_generator),
++                human_mode=human_mode,
++                time_ratio=time_ratio,
++                total_time=total_time,
++            )
++            return _create_neural_mcts_player(
++                game=game,
++                mcts_option=mcts_option,
++                num_actor=num_actor,
++                actor_channel=actor_channel,
++                assembler=assembler,
++            )
+diff --git a/pypolygames/evaluation.py b/pypolygames/evaluation.py
+index 4105184..413f351 100644
+--- a/pypolygames/evaluation.py
++++ b/pypolygames/evaluation.py
+@@ -9,6 +9,7 @@ import time
+ from concurrent.futures import ThreadPoolExecutor
+ from typing import Iterator, Tuple, List, Callable, Optional, Dict
+ 
++
+ import torch
+ 
+ import tube
+@@ -114,6 +115,8 @@ def create_evaluation_environment(
+     first_hand = []
+     second_hand = []
+     games = []
++    noise_a_star_model_eval = eval_params.noise_star_model
++    noise_a_star_param_eval = eval_params.noise_star_param
+ 
+     context = tube.Context()
+     actor_channel_eval = (
+@@ -130,36 +133,51 @@ def create_evaluation_environment(
+         game = create_game(
+             game_params, num_episode=1, seed=next(seed_generator), eval_mode=True
+         )
++        print("the pure mcts eval flag is")
++        print(pure_mcts_eval)
++
++        #I am adding in a flag here in the argument
+         player = create_player(
+             seed_generator=seed_generator,
+             game=game,
+             num_actor=num_actor_eval,
+             num_rollouts=num_rollouts_eval,
+             pure_mcts=pure_mcts_eval,
++            new_mcts_player=True,
+             actor_channel=actor_channel_eval,
+             assembler=None,
+             human_mode=False,
++            noise_a_star_model = noise_a_star_model_eval,
++            noise_a_star_param = noise_a_star_param_eval,
+         )
+         if game.is_one_player_game():
+             game.add_eval_player(player)
+             first_hand.append(game)
+         else:
++            print("the opponent mcts eval flag is")
++            print(pure_mcts_opponent)
+             opponent = create_player(
+                 seed_generator=seed_generator,
+                 game=game,
+                 num_actor=num_actor_opponent,
+                 num_rollouts=num_rollouts_opponent,
+                 pure_mcts=pure_mcts_opponent,
++                new_mcts_player=False,
+                 actor_channel=actor_channel_opponent,
+                 assembler=None,
+                 human_mode=False,
++                noise_a_star_model = noise_a_star_model_eval,
++                noise_a_star_param = noise_a_star_param_eval,
+             )
+             game_id = num_evaluated_games + game_no
++            #hacking
+             if player_moves_first(game_id, num_game):
++                print("player first")
+                 game.add_eval_player(player)
+                 game.add_eval_player(opponent)
+                 first_hand.append(game)
+             else:
++                print("opponent first")
+                 game.add_eval_player(opponent)
+                 game.add_eval_player(player)
+                 second_hand.append(game)
+@@ -180,7 +198,8 @@ def create_evaluation_environment(
+ 
+ 
+ def player_moves_first(game_id, num_games_eval):
+-    return game_id < num_games_eval // 2
++    return True
++    #return game_id < num_games_eval // 2
+ 
+ #######################################################################################
+ # EVALUATION
+@@ -253,12 +272,15 @@ def _play_game_neural_mcts_against_neural_mcts_opponent(
+ 
+         assert len(batch) <= 2  # up to two channels
+ 
++
++
+         if actor_channel_eval.name in batch:
+             # split in as many part as there are devices
+             batches_eval_s = torch.chunk(
+                 batch[actor_channel_eval.name]["s"], nb_devices_eval, dim=0
+             )
+             futures = []
++
+             reply_eval = {"v": None, "pi": None}
+             # multithread
+             with ThreadPoolExecutor(max_workers=nb_devices_eval) as executor:
+@@ -275,6 +297,7 @@ def _play_game_neural_mcts_against_neural_mcts_opponent(
+                 )
+             dcm.set_reply(actor_channel_eval.name, reply_eval)
+ 
++
+         if actor_channel_opponent.name in batch:
+             # split in as many part as there are devices
+             batches_opponent_s = torch.chunk(
+@@ -282,6 +305,7 @@ def _play_game_neural_mcts_against_neural_mcts_opponent(
+             )
+             futures = []
+             reply_opponent = {"v": None, "pi": None}
++
+             # multithread
+             with ThreadPoolExecutor(max_workers=nb_devices_opponent) as executor:
+                 for device, model, batch_s in zip(
+@@ -297,7 +321,9 @@ def _play_game_neural_mcts_against_neural_mcts_opponent(
+                 reply_opponent["pi"] = torch.cat(
+                     [result["pi"] for result in results], dim=0
+                 )
++
+             dcm.set_reply(actor_channel_opponent.name, reply_opponent)
++
+     dcm.terminate()
+ 
+ 
+@@ -390,7 +416,7 @@ def run_evaluation(eval_params: EvalParams, only_last: bool = False) -> None:
+     )
+ 
+     models_opponent = []
+-    pure_mcts_opponent = True
++    pure_mcts_opponent = False
+     devices_opponent = None
+     game_params_opponent = None
+     if eval_params.checkpoint_opponent is not None:
+diff --git a/pypolygames/human.py b/pypolygames/human.py
+index b67a1f8..d37a75a 100644
+--- a/pypolygames/human.py
++++ b/pypolygames/human.py
+@@ -60,6 +60,7 @@ def create_human_environment(
+         human_mode=True,
+         total_time=total_time,
+         time_ratio=time_ratio,
++        new_mcts_player=False,
+     )
+     human_player = polygames.HumanPlayer()
+     if game.is_one_player_game():
+diff --git a/pypolygames/params.py b/pypolygames/params.py
+index 9254982..013fcab 100644
+--- a/pypolygames/params.py
++++ b/pypolygames/params.py
+@@ -545,6 +545,8 @@ class EvalParams:
+     plot_server: str = "http://localhost"
+     plot_port: int = 8097
+     eval_verbosity: int = 1
++    noise_star_model: str = "exp"
++    noise_star_param: float = 1.01
+ 
+     def __setattr__(self, attr, value):
+         if value is None:
+@@ -693,6 +695,8 @@ class EvalParams:
+             plot_server=ArgFields(opts=dict(type=str, help="Visdom server url")),
+             plot_port=ArgFields(opts=dict(type=int, help="Visdom server port")),
+             eval_verbosity=ArgFields(opts=dict(type=int, help="Verbosity during the evaluation")),
++            noise_star_model=ArgFields(opts=dict(type=str, help="noise model for a star")),
++            noise_star_param=ArgFields(opts=dict(type=float, help="noise parameter for a star")),
+         )
+         defaults = cls(checkpoint_dir=Path("blublu"))  # cannot create with both None for checkpoint_dir and checkpoint
+         defaults.checkpoint_dir = None  # revert
+diff --git a/torchRL/.gitignore b/torchRL/.gitignore
+index 1378793..ad35d6b 100644
+--- a/torchRL/.gitignore
++++ b/torchRL/.gitignore
+@@ -3,4 +3,5 @@ build/*
+ cmake-build-debug/
+ *.pyc
+ */__pycache__/*
++a_star_results_all/*
+ .DS_Store
+diff --git a/torchRL/mcts/mcts.cc b/torchRL/mcts/mcts.cc
+index 79dcaf2..eedeaf7 100644
+--- a/torchRL/mcts/mcts.cc
++++ b/torchRL/mcts/mcts.cc
+@@ -7,9 +7,315 @@
+ 
+ #include "mcts/mcts.h"
+ #include <chrono>
++#include <queue>
++#include <bits/stdc++.h>
+ 
+ using namespace mcts;
+ 
++float returnConfidenceTerms(const Node* const node, std::string noise_model, float noise_param) {
++  assert(node != nullptr);
++  int d = node->getState().getStepIdx();
++  float sd = 2;
++  
++
++  if (noise_model == "exp") {
++    sd = 1/pow(noise_param, d+1);
++  }
++  else {
++    sd = 1/pow(d+1, noise_param);
++  }
++
++  return 2*sqrt(d+1)*sd;
++
++}
++
++float returnConfidenceTermsPolicy(const Node* const node, std::string noise_model, float noise_param) {
++  assert(node != nullptr);
++  int d = node->getState().getStepIdx();
++  float sd = 2;
++  
++
++  if (noise_model == "exp") {
++    sd = 1/pow(noise_param, d+1);
++  }
++  else {
++    sd = 1/pow(d+1, noise_param);
++  }
++
++  return 2*sqrt(d+1)*sd;
++
++}
++
++void computePiValue(Node* node, int rootPlayerId, Actor &actor) {
++  assert(node != nullptr);
++  PiVal piVal = actor.evaluate(node->getState());
++  piVal.playerId = node->getState().getCurrentPlayer();
++  node->settle(node->getState().getCurrentPlayer(), piVal);
++}
++
++void computePiValueInitial(Node* node, int rootPlayerId, Actor &actor) {
++  assert(node != nullptr);
++  PiVal piVal = actor.evaluate(node->getState());
++  piVal.playerId = rootPlayerId;
++  node->settle(rootPlayerId, piVal);
++}
++
++
++std::vector<Action> mcts::computeRollouts_new(const std::vector<Node*>& rootNodeList,
++                           const std::vector<const State*>& rootState,
++                           Actor& actor,
++                           const MctsOption& option,
++                           double max_time,
++                           std::minstd_rand& rng) {
++                      
++
++  std::vector<Action> bestActionList(rootNodeList.size());
++
++  for (size_t iter = 0; iter < rootNodeList.size(); ++iter) {
++
++    bool doneSearching = false;
++
++    Node* rootNode = rootNodeList[iter];
++    computePiValueInitial(rootNode, rootState[iter]->getCurrentPlayer(), actor);
++    Action chosenAction;
++
++    const auto& pi = rootNode->getPiVal().policy;
++    for (const auto& pair : pi) {
++      chosenAction = pair.first;
++      break;
++    }
++    float maxVal = -10.;
++  
++    int numRollout = 0;
++
++
++    int rootPlayerId = rootState[iter]->getCurrentPlayer();
++
++    struct RolloutState {
++      Node* node = nullptr;
++      Action action;
++      std::string noise_model;
++      float noise_param;
++
++      RolloutState(Node *node, Action action, std::string noise_model, float noise_param) : 
++      node(node), action(action), noise_model(noise_model), noise_param(noise_param) {}
++    };
++    
++    struct CompareValue { 
++      bool operator()(const RolloutState& rollout_node_one, const RolloutState& rollout_node_two) 
++      { 
++          PiVal v1 = rollout_node_one.node->getPiVal();
++          float v1_ucb = v1.value + returnConfidenceTerms(rollout_node_one.node, rollout_node_one.noise_model, rollout_node_one.noise_param);
++          PiVal v2 = rollout_node_two.node->getPiVal();
++          float v2_ucb = v2.value + returnConfidenceTerms(rollout_node_two.node, rollout_node_two.noise_model, rollout_node_two.noise_param);
++          return v1_ucb < v2_ucb;
++      } 
++    };
++
++    struct policyComparator
++    {
++      bool operator()(const float & left, const float & right) const
++      {
++        return (left > right);
++      }
++    }; 
++
++    std::priority_queue<RolloutState, std::vector<RolloutState>, CompareValue> priorityQueueStates;
++
++    priorityQueueStates.push(RolloutState(rootNode, -1, option.noiseAStarModel, option.noiseAStarParam));
++
++    double elapsedTime = 0;
++    std::chrono::time_point<std::chrono::system_clock> begin =
++        std::chrono::system_clock::now();
++
++
++    while ((((max_time > 0) || (numRollout < option.numRolloutPerThread)) &&
++            ((elapsedTime < max_time) || (max_time <= 0))) ||
++          numRollout < 2) {
++
++      if (doneSearching) {
++        break;
++      }
++      
++      if (priorityQueueStates.empty()) {
++        break;
++      }
++
++      RolloutState st = priorityQueueStates.top();
++      priorityQueueStates.pop();
++
++
++      if (st.node->getDepth() > rootNode->getDepth()) {
++        PiVal val = st.node->getPiVal();
++        float floatedVal = val.value;
++        if (floatedVal > maxVal) {
++          maxVal = floatedVal;
++          chosenAction = st.action;
++        }
++      }
++
++      if (! st.node->getState().terminated()) {
++
++        std::map<float, Action, policyComparator> sortedPolicy;
++        const auto& pi = st.node->getPiVal().policy;
++        for (const auto& pairing : pi) {
++          sortedPolicy.insert(std::make_pair(pairing.second, pairing.first));
++        }
++        float first_policy_prob = -1;
++
++        int map_counter = 0;
++
++        for (std::map<float, Action, policyComparator>::iterator pair=sortedPolicy.begin(); pair!=sortedPolicy.end(); ++pair) {
++          if ((st.node->getDepth() > rootNode->getDepth() + 2) && (map_counter > 1) && (log(first_policy_prob/(pair->first)) > returnConfidenceTermsPolicy(st.node, "exp", 1.1))) {
++            break;
++          }
++
++          if (map_counter == 0) {
++            first_policy_prob = pair->first;
++          }
++          map_counter += 1;
++          Node* childNode =
++              st.node->getOrAddChild(pair->second,
++                                     true,
++                                     false,
++                                     0);
++
++          computePiValue(childNode, rootPlayerId, actor);
++
++          if (childNode->getState().terminated()) {
++            PiVal piValue_terminated_child;
++            piValue_terminated_child.value = childNode->getState().getReward(rootPlayerId);
++             
++            if (piValue_terminated_child.value > 0) {
++              if (st.node->getDepth() == rootNode->getDepth()) {
++                chosenAction = pair->second;
++              }
++              else {
++                chosenAction = st.action;
++              }
++
++              doneSearching = true;
++              break;
++            }
++          }
++
++          else {
++            //// Using policy network
++/*             const auto& policyNetwork_opponent = childNode->getPiVal().policy;
++
++            Action opponent_chooses = 0;
++            float opponent_prob = -100;
++
++            for (const auto& opponent_policy_pair : policyNetwork_opponent) {
++              if (opponent_policy_pair.second > opponent_prob) {
++                opponent_chooses = opponent_policy_pair.first;
++                opponent_prob = opponent_policy_pair.second;
++              }
++            }
++ */
++            ///END USING policy network 
++
++            ///Using value network only
++
++            // const auto& policyNetwork_opponent = childNode->getPiVal().policy;
++            // Action opponent_chooses = 0;
++            // float grandchild_value = 10000;
++
++            // for (const auto& opponent_policy_pair : policyNetwork_opponent) {
++            //   Node* grandchildNode_test = childNode->getOrAddChild(opponent_policy_pair.first, true, false, 0);
++            //   computePiValue(grandchildNode_test, rootPlayerId, actor);
++
++            //   if (grandchildNode_test->getState().terminated()) {
++            //     PiVal piVal_grandchild_terminated;
++            //     piVal_grandchild_terminated.value = grandchildNode_test->getState().getReward(rootPlayerId);
++
++            //     if (piVal_grandchild_terminated.value < 0) {
++            //       opponent_chooses = opponent_policy_pair.first;
++            //       break;
++            //     }
++            //   }
++            //   else {
++            //     if (grandchildNode_test->getPiVal().value < grandchild_value) {
++            //       opponent_chooses = opponent_policy_pair.first;
++            //       grandchild_value = grandchildNode_test->getPiVal().value;
++            //       }
++            //   }
++
++            // }
++
++            ///End using value network only
++
++            const auto& policyNetwork_opponent = childNode->getPiVal().policy;
++            Action opponent_chooses = 0;
++            float curr_best_puct_value = -1000;
++
++            for (const auto& opponent_policy_pair : policyNetwork_opponent) {
++              Node* grandchildNode_test = childNode->getOrAddChild(opponent_policy_pair.first, true, false, 0);
++              computePiValue(grandchildNode_test, rootPlayerId, actor);
++
++              if (grandchildNode_test->getState().terminated()) {
++                PiVal piVal_grandchild_terminated;
++                piVal_grandchild_terminated.value = grandchildNode_test->getState().getReward(rootPlayerId);
++
++                if (piVal_grandchild_terminated.value < 0) {
++                  opponent_chooses = opponent_policy_pair.first;
++                  break;
++                }
++              }
++              else {
++
++                float puct_val = opponent_policy_pair.second + -1*grandchildNode_test->getPiVal().value;
++                if (puct_val > curr_best_puct_value) {
++                  opponent_chooses = opponent_policy_pair.first;
++                  curr_best_puct_value = puct_val;
++                  }
++              }
++
++            }
++            Node* grandchildNode = childNode->getOrAddChild(opponent_chooses, true, false, 0);
++            computePiValue(grandchildNode, rootPlayerId, actor);
++
++            if (grandchildNode->getState().terminated()) {
++              PiVal piVal_grandchild_terminated_new;
++              piVal_grandchild_terminated_new.value = grandchildNode->getState().getReward(rootPlayerId);
++
++
++              if (piVal_grandchild_terminated_new.value > 0) {
++                if (st.node->getDepth() == rootNode->getDepth()) {
++                  chosenAction = pair->second;
++                }
++                else {
++                  chosenAction = st.action;
++                }
++                doneSearching = true;
++                break;
++              }
++            }
++
++            else {
++              PiVal val_grandchild = grandchildNode->getPiVal();
++              float floatedVal_grandchild = val_grandchild.value;
++
++              if (grandchildNode->getDepth() == rootNode->getDepth() + 2) {
++                priorityQueueStates.push(RolloutState(grandchildNode, pair->second, option.noiseAStarModel, option.noiseAStarParam));
++              }
++              else {
++                priorityQueueStates.push(RolloutState(grandchildNode, st.action, option.noiseAStarModel, option.noiseAStarParam));
++              }
++            }
++          }
++        }
++      }
++      ++numRollout;
++      std::chrono::time_point<std::chrono::system_clock> end = std::chrono::system_clock::now();
++      elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(end - begin).count();
++    }
++    bestActionList.at(iter) = chosenAction;
++  }
++
++  return bestActionList;
++}
++
+ Action pickBestAction(int rootPlayerId,
+                       const Node* const node,
+                       float puct,
+@@ -62,8 +368,6 @@ Action pickBestAction(int rootPlayerId,
+       bestAction = pair.first;
+     }
+   }
+-  // std::cout << "best score is " << bestScore << std::endl;
+-  // assert(false);
+   return bestAction;
+ }
+ 
+@@ -74,7 +378,6 @@ void mcts::computeRollouts(const std::vector<Node*>& rootNode,
+                            double max_time,
+                            std::minstd_rand& rng) {
+   int numRollout = 0;
+-  // int rootPlayerId = rootNode->getPiVal().playerId;
+ 
+   struct RolloutState {
+     Node* root = nullptr;
+@@ -117,36 +420,25 @@ void mcts::computeRollouts(const std::vector<Node*>& rootNode,
+         st.node->acquire();
+         st.node->getMctsStats().addVirtualLoss(option.virtualLoss);
+         if (!st.node->isVisited()) {
+-          // std::cout << " not visited" << std::endl;
+           break;
+         }
+-
+-        // If we have policy network then value prior collected at
+-        // different nodes are more accurate. Otherwise it could harm the
+-        // exploration.
+         Action bestAction = pickBestAction(st.root->getPiVal().playerId,
+                                            st.node,
+                                            option.puct,
+                                            option.useValuePrior,
+                                            rng);
+-        // this is a terminal state that has been visited
+         if (bestAction == InvalidAction) {
+-          // std::cout << " invalid action " << std::endl;
+           break;
+         }
+         bool stochasticFather = st.state->isStochastic();
+         if (!option.storeStateInNode) {
+-          // std::cout << " forward" << std::endl;
+           st.state->forward(bestAction);
+-          // std::cout << " forward done" << std::endl;
+         }
+ 
+         uint64_t hash = 0;
+         if (st.state != nullptr) {
+           hash = st.state->getHash();
+         }
+-
+-        // std::cout << " goac" << std::endl;
+         Node* childNode =
+             st.node->getOrAddChild(bestAction,
+                                    option.storeStateInNode,
+@@ -155,7 +447,6 @@ void mcts::computeRollouts(const std::vector<Node*>& rootNode,
+                                    hash);
+         st.node->release();
+         st.node = childNode;
+-        // std::cout << " endloop " << std::endl;
+       }
+     }
+ 
+diff --git a/torchRL/mcts/mcts.h b/torchRL/mcts/mcts.h
+index 20464ab..2372bcf 100644
+--- a/torchRL/mcts/mcts.h
++++ b/torchRL/mcts/mcts.h
+@@ -24,6 +24,13 @@
+ 
+ namespace mcts {
+ 
++std::vector<Action> computeRollouts_new(const std::vector<Node*>& rootNode,
++                     const std::vector<const State*>& rootState,
++                     Actor& actor,
++                     const MctsOption& option,
++                     double thisMoveTime,
++                     std::minstd_rand& rng);
++
+ void computeRollouts(const std::vector<Node*>& rootNode,
+                      const std::vector<const State*>& rootState,
+                      Actor& actor,
+@@ -59,12 +66,58 @@ class MctsPlayer : public Player {
+   std::vector<MctsResult> actMcts(const std::vector<const State*>& states) {
+     std::vector<MctsResult> result(states.size(), &rng_);
+ 
+-    // prior only
+-    if (!option_.useMcts) {
+-      for (size_t i = 0; i != states.size(); ++i) {
+-        PiVal piVal = actors_[0]->evaluate(*states[i]);
+-        result[i].setMctsPolicy(std::move(piVal.policy));
+-      }
++    // overriding this option 
++    if (option_.useNewMcts) {
++      std::vector<Node*> roots;
++        for (auto* state : states) {
++          Node* rootNode = storage_.newNode();
++          rootNode->init(nullptr,
++                        state->clone(), 
++                        state->getHash());
++          roots.push_back(rootNode);
++        }
++
++        double thisMoveTime = remaining_time * option_.timeRatio;
++        if (thisMoveTime > 0) {
++          std::cerr << "Remaining time:" << remaining_time << std::endl;
++          std::cerr << "This move time:" << thisMoveTime << std::endl;
++        }
++        std::chrono::time_point<std::chrono::system_clock> begin =
++            std::chrono::system_clock::now();
++        std::vector<Action> bestActions = computeRollouts_new(
++              roots, states, *actors_[0], option_, thisMoveTime, rng_);
++
++        std::chrono::time_point<std::chrono::system_clock> end =
++            std::chrono::system_clock::now();
++        remaining_time -=
++            std::chrono::duration_cast<std::chrono::seconds>(end - begin).count();
++
++        for (size_t i = 0; i != states.size(); ++i) {
++          Node* rootNode = roots[i];
++          result[i].rootValue = 0;
++          if (states[i]->getStepIdx() < option_.sampleBeforeStepIdx) {
++            for (const auto& pair : rootNode->getChildren()) {
++              result[i].add(pair.first, 1);
++            }
++            result[i].normalize();
++            rootNode->freeTree();
++            result[i].sample();
++          }
++          else {
++            for (const auto& pair : rootNode->getChildren()) {
++              if (pair.first == bestActions.at(i)) {
++                result.at(i).add(bestActions.at(i), 1);
++              }
++              else {
++                result.at(i).add(pair.first, 0);
++              }
++            }
++            
++            result[i].normalize();
++            rootNode->freeTree();
++          }
++        }
++      return result;
+     } else {
+       std::vector<Node*> roots;
+       for (auto* state : states) {
+@@ -120,22 +173,28 @@ class MctsPlayer : public Player {
+                     << std::endl;
+         }
+         result[i].rootValue = rootNode->getMctsStats().getAvgValue();
+-        for (const auto& pair : rootNode->getChildren()) {
+-          int visits = 0;
+-          for (size_t u = 0; u < pair.second.size(); u++) {
+-            visits += pair.second[u]->getMctsStats().getNumVisit();
++        if (states[i]->getStepIdx() < option_.sampleBeforeStepIdx) {
++          for (const auto& pair : rootNode->getChildren()) {
++            result[i].add(pair.first, 1);
+           }
+-          result[i].add(pair.first, visits);
++          result[i].normalize();
++          rootNode->freeTree();
++          result[i].sample();
+         }
+-        result[i].normalize();
++        else {
++          for (const auto& pair : rootNode->getChildren()) {
++            int visits = 0;
++            for (size_t u = 0; u < pair.second.size(); u++) {
++              visits += pair.second[u]->getMctsStats().getNumVisit();
++            }
++            result[i].add(pair.first, visits);
++          }
++          result[i].normalize();
+         // rootNode->printTree(0, 2, -1);
+-        rootNode->freeTree();
+-      }
+-    }
+-    for (size_t i = 0; i != states.size(); ++i) {
+-      if (states[i]->getStepIdx() < option_.sampleBeforeStepIdx) {
+-        // std::cout << "sample:" << std::endl;
+-        result[i].sample();
++          rootNode->freeTree();
++
++        }
++
+       }
+     }
+     return result;
+@@ -148,6 +207,7 @@ class MctsPlayer : public Player {
+   }
+ 
+   MctsResult actMcts(const State& state) {
++    //std::cout << "CALLING SMALL ACTMCTS" << std::endl;
+     return actMcts({&state})[0];
+   }
+ 
+diff --git a/torchRL/mcts/node.cc b/torchRL/mcts/node.cc
+index 3368386..075a67a 100644
+--- a/torchRL/mcts/node.cc
++++ b/torchRL/mcts/node.cc
+@@ -16,20 +16,20 @@ void Node::init(Node* parent, std::unique_ptr<State> s, uint64_t stateHash) {
+   assert(parent_ == nullptr);
+   assert(state_ == nullptr);
+   assert(children_.empty());
+-  // assert(depth_ == 0);
++  assert(depth_ == 0);
+   assert(visited_ == false);
+ 
+   parent_ = parent;
+   state_ = std::move(s);
+   stateHash_ = stateHash;
+-  // depth_ = parent == nullptr ? 0 : parent->getDepth() + 1;
++  depth_ = parent == nullptr ? 0 : parent->getDepth() + 1;
+ }
+ 
+ void Node::reset() {
+   parent_ = nullptr;
+   state_ = nullptr;
+   children_.clear();
+-  // depth_ = 0;
++  depth_ = 0;
+   visited_ = false;
+ 
+   mctsStats_.reset();
+@@ -54,11 +54,9 @@ Node* Node::getOrAddChild(const Action& action,
+ 
+   std::unique_ptr<State> childState;
+   if (it != children_.end()) {
+-    // std::cout << "child found" << std::endl;
+     if (!stochastic) {  // if not stochastic we keep one child in the list,
+                         // only.
+       assert(it->second.size() == 1);
+-      // std::cout << "not stochastic" << std::endl;
+       return it->second[0];
+     } else {
+       // stochastic games always need to forward state to determine which child
+@@ -68,16 +66,12 @@ Node* Node::getOrAddChild(const Action& action,
+         // TODO:[qucheng] Do we want to compare against all nodes' state?
+         // answer[oteytaud] only the nodes corresponding to the right action.
+         if (node->getStateHash() == stateHash) {
+-          // std::cout << "hash found" << std::endl;
+           return node;
+         }
+       }
+-
+-      // this is a new stochastic choice
+       Node* child = storage_->newNode();
+       child->init(this, std::move(childState), stateHash);
+       it->second.push_back(child);
+-      // std::cout << " creating stochastic child" << std::endl;
+       return child;
+     }
+   }
+@@ -90,11 +84,12 @@ Node* Node::getOrAddChild(const Action& action,
+   }
+ 
+   std::vector<Node*> childList;
++
+   Node* child = storage_->newNode();
++
+   child->init(this, std::move(childState), hash);
+   childList.push_back(child);
+   children_.insert(it, {action, childList});
+-  //std::cout << " new decision child" << std::endl;
+   return child;
+ }
+ 
+diff --git a/torchRL/mcts/node.h b/torchRL/mcts/node.h
+index 8388450..95ce429 100644
+--- a/torchRL/mcts/node.h
++++ b/torchRL/mcts/node.h
+@@ -65,9 +65,14 @@ class Node {
+   }
+ 
+   const State& getState() const {
++    assert(_state != nullptr);
+     return *state_;
+   }
+ 
++  const State* getStatePtr() const {
++    return state_.get();
++  }
++
+   NodeId getId() const {
+     return id_;
+   }
+@@ -80,9 +85,9 @@ class Node {
+     return parent_;
+   }
+ 
+-  // int getDepth() const {
+-  //   return depth_;
+-  // }
++  int getDepth() const {
++    return depth_;
++  }
+ 
+   const PiVal& getPiVal() const {
+     return piVal_;
+@@ -131,7 +136,7 @@ class Node {
+   std::unique_ptr<State> state_;
+   uint64_t stateHash_;
+   std::unordered_map<Action, std::vector<Node*>> children_;
+-  // int depth_;
++  int depth_;
+   bool visited_;
+ 
+   MctsStats mctsStats_;
+diff --git a/torchRL/mcts/pybind.cc b/torchRL/mcts/pybind.cc
+index 9eb7247..e56efb9 100644
+--- a/torchRL/mcts/pybind.cc
++++ b/torchRL/mcts/pybind.cc
+@@ -35,5 +35,8 @@ PYBIND11_MODULE(mcts, m) {
+       .def_readwrite("store_state_in_node", &MctsOption::virtualLoss)
+       .def_readwrite("use_value_prior", &MctsOption::useValuePrior)
+       .def_readwrite("time_ratio", &MctsOption::timeRatio)
+-      .def_readwrite("total_time", &MctsOption::totalTime);
++      .def_readwrite("total_time", &MctsOption::totalTime)
++      .def_readwrite("noise_a_star_model", &MctsOption::noiseAStarModel)
++      .def_readwrite("noise_a_star_param", &MctsOption::noiseAStarParam)
++      .def_readwrite("use_new_mcts", &MctsOption::useNewMcts);
+ }
+diff --git a/torchRL/mcts/test.cc b/torchRL/mcts/test.cc
+index 222b58e..175370f 100644
+--- a/torchRL/mcts/test.cc
++++ b/torchRL/mcts/test.cc
+@@ -1,3 +1,4 @@
++/**
+ /**
+  * Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
+  *
+diff --git a/torchRL/mcts/utils.h b/torchRL/mcts/utils.h
+index 4347f47..ed1faf5 100644
+--- a/torchRL/mcts/utils.h
++++ b/torchRL/mcts/utils.h
+@@ -8,6 +8,7 @@
+ #pragma once
+ 
+ #include <algorithm>
++#include <string>
+ #include <atomic>
+ #include <cassert>
+ #include <iostream>
+@@ -22,6 +23,9 @@ namespace mcts {
+ 
+ class MctsOption {
+  public:
++  bool useNewMcts = false;
++  std::string noiseAStarModel = "exp";
++  float noiseAStarParam = 0.01;
+   float totalTime = 0;
+   float timeRatio = 0.07;
+   // whether to use mcts simulations to decide a move

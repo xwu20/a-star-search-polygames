@@ -1,0 +1,11 @@
+depth: 10
+degree: 5
+eta: 1
+opt: 1
+alpha: 1.2
+global_seed: 1
+num_trials: 200
+max_expansions: 20000
+test_interval: 1000
+noise_type: exp
+cd_constant: 5
